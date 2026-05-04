@@ -17,6 +17,8 @@
         .btn-copy { background: #8B5CF6; }
         .btn-ai { background: #38BDF8; }
         .result-box { background: #F0F9FF; padding: 15px; border-radius: 12px; border: 1px solid #BAE6FD; color: #0369A1; display: none; margin-top: 10px; line-height: 1.6; }
+        /* Style tambahan untuk tombol yang tidak support */
+        .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -33,30 +35,84 @@
         </div>
         <div id="result" class="result-box"></div>
     </div>
+
     <script>
-        let rec; let isRec = false;
+        let rec; 
+        let isRec = false;
+        
+        // Pengecekan Browser
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
         if(Speech) {
-            rec = new Speech(); rec.continuous = true; rec.lang = 'id-ID'; rec.interimResults = true;
+            rec = new Speech(); 
+            rec.continuous = true; 
+            rec.lang = 'id-ID'; 
+            rec.interimResults = true;
+            
             rec.onresult = (e) => {
-                let txt = ''; for(let i=e.resultIndex; i<e.results.length; i++) { if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; }
+                let txt = ''; 
+                for(let i=e.resultIndex; i<e.results.length; i++) { 
+                    if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; 
+                }
                 document.getElementById('note').value += txt;
             };
+
+            rec.onerror = (e) => {
+                console.error("Error suara:", e.error);
+                if(e.error === 'not-allowed') alert("Akses mikrofon ditolak. Mohon izinkan mikrofon di pengaturan browser.");
+            };
+        } else {
+            // Jika browser tidak mendukung (Opera, Mozilla, UC, dll)
+            const btn = document.getElementById('btnRec');
+            btn.disabled = true;
+            btn.innerText = "⚠️ Ganti ke Chrome";
+            btn.onclick = () => alert("Gunakan Google Chrome atau Edge untuk fitur rekam suara.");
         }
+
         function toggleRecord() {
-            if(!isRec) { rec.start(); isRec = true; document.getElementById('btnRec').innerText = "⏹️ Berhenti"; }
-            else { rec.stop(); isRec = false; document.getElementById('btnRec').innerText = "🔴 Mulai Rekam"; }
+            if(!isRec) { 
+                try {
+                    rec.start(); 
+                    isRec = true; 
+                    document.getElementById('btnRec').innerText = "⏹️ Berhenti"; 
+                    document.getElementById('btnRec').style.background = "#475569";
+                } catch(e) {
+                    alert("Gagal memulai rekam. Pastikan mikrofon aktif.");
+                }
+            } else { 
+                rec.stop(); 
+                isRec = false; 
+                document.getElementById('btnRec').innerText = "🔴 Mulai Rekam"; 
+                document.getElementById('btnRec').style.background = "#EF4444";
+            }
         }
+
         function copyTxt() {
-            const t = document.getElementById('note'); t.select(); navigator.clipboard.writeText(t.value);
-            alert("Teks disalin!");
+            const t = document.getElementById('note');
+            if(!t.value) return alert("Tidak ada teks untuk disalin!");
+            t.select(); 
+            navigator.clipboard.writeText(t.value);
+            alert("Teks berhasil disalin ke clipboard!");
         }
+
         function proses(tipe) {
-            const t = document.getElementById('note').value; if(!t.trim()) return alert("Teks masih kosong!");
-            const res = document.getElementById('result'); res.style.display = 'block';
+            const t = document.getElementById('note').value; 
+            if(!t.trim()) return alert("Teks masih kosong!");
+            
+            const res = document.getElementById('result'); 
+            res.style.display = 'block';
+            
+            // Logika pemrosesan sederhana berdasarkan titik
             const kalimat = t.split('.').filter(s => s.trim().length > 0);
-            if(tipe === 'ringkas') res.innerHTML = "<b>Hasil Ringkasan:</b><br>" + (kalimat[0] || t) + ".";
-            else res.innerHTML = "<b>Poin Penting:</b><br>• " + kalimat.join('<br>• ');
+            
+            if(tipe === 'ringkas') {
+                res.innerHTML = "<b>Hasil Ringkasan:</b><br>" + (kalimat[0] || t) + ".";
+            } else {
+                res.innerHTML = "<b>Poin Penting:</b><br>• " + kalimat.join('<br>• ');
+            }
+            
+            // Scroll otomatis ke hasil
+            res.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
