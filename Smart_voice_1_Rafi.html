@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Voice Note AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5; 
+            --primary-hover: #4338CA;
+            --danger: #EF4444;
+            --success: #10B981;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: auto;
+            min-height: 100vh;
+        }
+
+        .sidebar { width: 320px; background: var(--card); border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column;}
+        .main-content { flex: 1; background: var(--card); border-radius: 16px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); width: 100%; overflow: hidden; }
+
+        h2 { color: var(--text-main); font-weight: 700; margin-bottom: 15px; }
+        .sidebar-title { font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; font-weight: bold;}
+        
+        .note-list { list-style: none; overflow-y: auto; flex: 1; margin-bottom: 15px;}
+        .note-item { padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; border-radius: 8px; position: relative; margin-bottom: 5px;}
+        .note-item:hover { background-color: #F1F5F9; }
+        .note-item.active { background-color: #EEF2FF; border-left: 4px solid var(--primary); }
+        .note-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; display: block; padding-right: 25px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .note-date { font-size: 0.75rem; color: var(--text-muted); display: block;}
+        
+        .btn-delete-note {
+            position: absolute; right: 10px; top: 12px; background: none; border: none; color: #EF4444;
+            cursor: pointer; font-size: 1.1rem; opacity: 0.5; transition: 0.2s;
+        }
+        .btn-delete-note:hover { opacity: 1; transform: scale(1.1); }
+
+        textarea { 
+            width: 100%; height: 250px; padding: 15px; font-family: 'Inter', sans-serif;
+            font-size: 16px; line-height: 1.6; border: 1px solid var(--border);
+            border-radius: 12px; resize: vertical; outline: none; transition: border 0.3s;
+            background-color: #F8FAFC; margin-bottom: 10px;
+        }
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;}
+        .btn { 
+            padding: 10px 16px; font-size: 0.9rem; font-weight: 600; cursor: pointer; 
+            border: none; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+
+        .btn-record { background-color: var(--danger); }
+        .btn-stop { background-color: #5C82A6; } 
+        .btn-save { background-color: var(--primary); width: 100%; margin-top: 10px;}
+        .btn-pdf { background-color: var(--success); }
+        .btn-txt { background-color: #F59E0B; color: white; } 
+        .btn-copy { background-color: #8B5CF6; color: white; } /* Tombol Salin Teks (Ungu) */
+        .btn-ai { background-color: #38BDF8; color: #FFFFFF; text-shadow: 0 1px 1px rgba(0,0,0,0.1); } 
+
+        .ai-result-box { 
+            background-color: #F0F9FF; padding: 20px; border: 1px solid #BAE6FD;
+            margin-top: 25px; border-radius: 12px; color: #0369A1; font-size: 0.95rem; line-height: 1.6;
+            width: 100%; word-wrap: break-word; page-break-inside: avoid;
+        }
+        
+        .mermaid svg { max-width: 100% !important; height: auto !important; }
+
+        /* Media Query: Aturan khusus untuk layar HP */
+        @media (max-width: 768px) {
+            body { flex-direction: column; padding: 10px; }
+            .sidebar { width: 100%; height: 350px; }
+            .btn { flex: 1 1 auto; }
+            .btn-txt { display: none; } /* Sembunyikan tombol Unduh .TXT di HP */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-title">📁 Catatan Saya</div>
+        <ul class="note-list" id="noteList"></ul>
+        <button class="btn btn-save" onclick="saveNote()">💾 Simpan ke Daftar</button>
+        <button class="btn btn-save" style="background-color: #64748B;" onclick="newNote()">📄 Buat Catatan Baru</button>
+    </div>
+
+    <div class="main-content">
+        <h2>🎙️ Smart Voice Note AI</h2>
+        
+        <div class="btn-group">
+            <button class="btn btn-record" onclick="startRecording()" id="btnRecord">🔴 Mulai Rekam</button>
+            <button class="btn btn-stop" onclick="stopRecording()">⏹️ Berhenti</button>
+            <button class="btn btn-pdf" onclick="downloadPDF()">📄 Unduh PDF</button>
+            <button class="btn btn-txt" onclick="downloadTXT()">💾 Unduh .TXT</button>
+            <button class="btn btn-copy" onclick="copyText()">📋 Salin Teks</button>
+        </div>
+
+        <div id="content-to-print">
+            <textarea id="note-text" placeholder="Ketuk 'Mulai Rekam' lalu berbicaralah, atau ketik langsung di sini..."></textarea>
+
+            <div class="btn-group" id="ai-buttons">
+                <button class="btn btn-ai" onclick="processAI('ringkas')">✨ Ringkas</button>
+                <button class="btn btn-ai" onclick="processAI('poin')">📌 Poin Penting</button>
+                <button class="btn btn-ai" onclick="processAI('mindmap')">🧠 Mind Map</button>
+            </div>
+
+            <div id="ai-result" class="ai-result-box" style="display: none;">
+                <h4 style="margin-bottom: 10px; color: #075985;">Hasil AI:</h4>
+                <div id="ai-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+
+        let notes = JSON.parse(localStorage.getItem('smartNotes')) || [];
+        
+        function renderNotes() {
+            const list = document.getElementById('noteList');
+            list.innerHTML = '';
+            notes.forEach((note, index) => {
+                const li = document.createElement('li');
+                li.className = 'note-item';
+                
+                const title = note.text.substring(0, 30) || "Catatan Kosong";
+                
+                const textSpan = document.createElement('span');
+                textSpan.innerHTML = `<span class="note-title">${title}...</span><span class="note-date">${note.date}</span>`;
+                textSpan.style.display = "block";
+                textSpan.style.width = "90%";
+                textSpan.onclick = () => loadNote(index);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-delete-note';
+                deleteBtn.innerHTML = '🗑️';
+                deleteBtn.title = "Hapus catatan ini";
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteNote(index);
+                };
+
+                li.appendChild(textSpan);
+                li.appendChild(deleteBtn);
+                list.appendChild(li);
+            });
+        }
+
+        function saveNote() {
+            const text = document.getElementById('note-text').value;
+            if(!text.trim()) return alert("Teks masih kosong, tidak ada yang disimpan.");
+            
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const fullDate = new Date().toLocaleDateString('id-ID', options);
+            
+            notes.unshift({ text, date: fullDate }); 
+            localStorage.setItem('smartNotes', JSON.stringify(notes));
+            renderNotes();
+            alert("Berhasil disimpan ke daftar catatan!");
+        }
+
+        function deleteNote(index) {
+            const confirmDelete = confirm("Yakin ingin menghapus catatan ini?");
+            if(confirmDelete) {
+                notes.splice(index, 1);
+                localStorage.setItem('smartNotes', JSON.stringify(notes));
+                renderNotes();
+            }
+        }
+
+        function loadNote(index) {
+            document.getElementById('note-text').value = notes[index].text;
+            document.getElementById('ai-result').style.display = 'none'; 
+        }
+
+        function newNote() {
+            document.getElementById('note-text').value = '';
+            document.getElementById('ai-result').style.display = 'none';
+        }
+
+        // Fitur Unduh .TXT
+        function downloadTXT() {
+            const text = document.getElementById('note-text').value;
+            if(!text.trim()) return alert("Catatan kosong, tidak bisa diunduh.");
+            
+            const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Catatan_Voice_Note.txt";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Fitur Salin Teks (Baru)
+        function copyText() {
+            const text = document.getElementById('note-text').value;
+            if(!text.trim()) return alert("Catatan kosong, tidak ada yang disalin.");
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Teks berhasil disalin ke clipboard!");
+            }).catch(err => {
+                alert("Gagal menyalin teks.");
+            });
+        }
+
+        renderNotes(); 
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isRecording = false;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true; 
+            recognition.interimResults = true; 
+            recognition.lang = 'id-ID'; 
+
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    }
+                }
+                if (finalTranscript !== '') {
+                    const textArea = document.getElementById('note-text');
+                    textArea.value += finalTranscript;
+                    textArea.scrollTop = textArea.scrollHeight;
+                }
+            };
+        } else {
+            alert("Browser ini tidak mendukung rekam suara otomatis.");
+        }
+
+        function startRecording() {
+            if (recognition && !isRecording) {
+                recognition.start();
+                isRecording = true;
+                document.getElementById('btnRecord').innerHTML = "⏳ Mendengarkan...";
+                document.getElementById('btnRecord').style.backgroundColor = "#B91C1C";
+            }
+        }
+
+        function stopRecording() {
+            if (recognition && isRecording) {
+                recognition.stop();
+                isRecording = false;
+                document.getElementById('btnRecord').innerHTML = "🔴 Mulai Rekam";
+                document.getElementById('btnRecord').style.backgroundColor = "var(--danger)";
+            }
+        }
+
+        async function processAI(type) {
+            const text = document.getElementById('note-text').value;
+            if (!text.trim()) {
+                alert("Catatan masih kosong!"); return;
+            }
+
+            const aiResultBox = document.getElementById('ai-result');
+            const aiContent = document.getElementById('ai-content');
+            aiResultBox.style.display = 'block';
+            aiContent.innerHTML = "<i>Memproses... Mohon tunggu.</i>";
+
+            const sentences = text.split('.').filter(s => s.trim().length > 0);
+            const firstSentence = sentences[0] ? sentences[0] + "." : text;
+            const secondSentence = sentences[1] ? sentences[1] + "." : "";
+
+            setTimeout(async () => {
+                if (type === 'ringkas') {
+                    aiContent.innerHTML = `<b>Ringkasan:</b><br><br><i>"${firstSentence} ${secondSentence}"</i>`;
+                
+                } else if (type === 'poin') {
+                    let listHTML = "<b>Poin Penting:</b><br><ul>";
+                    for(let i=0; i < Math.min(3, sentences.length); i++) {
+                        listHTML += `<li>${sentences[i].trim()}</li>`;
+                    }
+                    if(sentences.length === 0) listHTML += `<li>${text}</li>`;
+                    listHTML += "</ul>";
+                    aiContent.innerHTML = listHTML;
+                
+                } else if (type === 'mindmap') {
+                    const words = text.split(' ');
+                    const title = words.slice(0, 3).join(' ') || "Topik";
+                    const point1 = words.slice(3, 5).join(' ') || "Poin 1";
+                    const point2 = words.slice(5, 7).join(' ') || "Poin 2";
+
+                    const mermaidCode = `
+                        graph TD;
+                        A[${title}] --> B(${point1});
+                        A --> C(${point2});
+                        C --> D{Kesimpulan};
+                    `;
+                    aiContent.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
+                    
+                    try {
+                        await mermaid.run();
+                    } catch (err) {}
+                }
+            }, 600);
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('content-to-print');
+            const aiButtons = document.getElementById('ai-buttons');
+            aiButtons.style.display = 'none';
+
+            const opt = {
+                margin:       15,
+                filename:     'Catatan-Voice-Note.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } 
+            };
+            
+            const textArea = document.getElementById('note-text');
+            textArea.style.border = 'none';
+            textArea.style.backgroundColor = '#fff';
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                textArea.style.border = '1px solid var(--border)';
+                textArea.style.backgroundColor = '#F8FAFC';
+                aiButtons.style.display = 'flex'; 
+            });
+        }
+    </script>
+</body>
+</html>
