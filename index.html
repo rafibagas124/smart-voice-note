@@ -3,117 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Voice Note AI</title>
+    <title>Smart Voice Note AI - Full Features</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #4F46E5; --bg: #F8FAFC; --card: #FFFFFF; --border: #E2E8F0; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
-        .container { max-width: 800px; width: 100%; background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border); }
-        h2 { text-align: center; margin-bottom: 20px; color: #1E293B; }
-        textarea { width: 100%; height: 200px; padding: 15px; border-radius: 12px; border: 1px solid var(--border); font-size: 16px; margin-bottom: 15px; resize: none; background: #F8FAFC; box-sizing: border-box; }
-        .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; justify-content: center; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; font-size: 14px; flex: 1; min-width: 130px; }
+        .container { max-width: 850px; width: 100%; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        h2 { text-align: center; color: #1E293B; margin-bottom: 20px; }
+        textarea { width: 100%; height: 180px; padding: 15px; border-radius: 12px; border: 1px solid var(--border); font-size: 16px; margin-bottom: 10px; resize: none; background: #F8FAFC; box-sizing: border-box; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; font-size: 13px; flex: 1; min-width: 120px; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-record { background: #EF4444; }
-        .btn-copy { background: #8B5CF6; }
-        .btn-ai { background: #38BDF8; }
-        .result-box { background: #F0F9FF; padding: 15px; border-radius: 12px; border: 1px solid #BAE6FD; color: #0369A1; display: none; margin-top: 10px; line-height: 1.6; }
-        /* Style tambahan untuk tombol yang tidak support */
-        .btn:disabled { background: #94a3b8 !important; cursor: not-allowed; }
+        .btn-save { background: #2563EB; }
+        .btn-ai { background: #0EA5E9; }
+        .btn-download { background: #475569; }
+        .btn-delete-all { background: #991B1B; margin-top: 10px; width: 100%; }
+        
+        .storage-section { margin-top: 30px; border-top: 2px dashed var(--border); pt: 20px; }
+        .note-card { background: white; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        .note-card:hover { background: #F1F5F9; }
+        .note-info { flex-grow: 1; }
+        .note-date { font-size: 11px; color: #64748B; display: block; }
+        .note-preview { font-size: 14px; font-weight: 600; color: #1E293B; }
+        .actions { display: flex; gap: 5px; }
+        .btn-small { padding: 5px 10px; border-radius: 5px; font-size: 11px; border: none; color: white; cursor: pointer; }
+        .btn-del { background: #DC2626; }
+        
+        @media print { .btn-group, textarea, .storage-section, h2 { display: none !important; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🎙️ Smart Voice Note</h2>
+        <h2>🎙️ Smart Voice Note Pro</h2>
+        
         <div class="btn-group">
             <button class="btn btn-record" onclick="toggleRecord()" id="btnRec">🔴 Mulai Rekam</button>
-            <button class="btn btn-copy" onclick="copyTxt()">📋 Salin Teks</button>
+            <button class="btn btn-save" onclick="saveToWeb()">💾 Simpan ke Web</button>
         </div>
-        <textarea id="note" placeholder="Klik 'Mulai Rekam' dan bicaralah..."></textarea>
+
+        <textarea id="note" placeholder="Bicara atau ketik di sini..."></textarea>
+
         <div class="btn-group">
             <button class="btn btn-ai" onclick="proses('ringkas')">✨ Ringkas</button>
             <button class="btn btn-ai" onclick="proses('poin')">📌 Poin Penting</button>
+            <button class="btn btn-download" onclick="downloadTxt()">📥 Download TXT</button>
         </div>
-        <div id="result" class="result-box"></div>
+
+        <div id="result" style="background: #F0F9FF; padding: 15px; border-radius: 10px; display: none; margin-bottom: 15px; border: 1px solid #BAE6FD;"></div>
+
+        <div class="storage-section">
+            <h3 style="font-size: 16px;">📂 Catatan Tersimpan</h3>
+            <div id="storageList"></div>
+            <button class="btn btn-delete-all" onclick="clearAll()">🗑️ Hapus Semua Riwayat</button>
+        </div>
     </div>
 
     <script>
-        let rec; 
-        let isRec = false;
-        
-        // Pengecekan Browser
+        let rec; let isRec = false;
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-        
+
         if(Speech) {
-            rec = new Speech(); 
-            rec.continuous = true; 
-            rec.lang = 'id-ID'; 
-            rec.interimResults = true;
-            
+            rec = new Speech(); rec.continuous = true; rec.lang = 'id-ID'; rec.interimResults = true;
             rec.onresult = (e) => {
-                let txt = ''; 
-                for(let i=e.resultIndex; i<e.results.length; i++) { 
-                    if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; 
-                }
+                let txt = ''; for(let i=e.resultIndex; i<e.results.length; i++) { if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; }
                 document.getElementById('note').value += txt;
             };
-
-            rec.onerror = (e) => {
-                console.error("Error suara:", e.error);
-                if(e.error === 'not-allowed') alert("Akses mikrofon ditolak. Mohon izinkan mikrofon di pengaturan browser.");
-            };
-        } else {
-            // Jika browser tidak mendukung (Opera, Mozilla, UC, dll)
-            const btn = document.getElementById('btnRec');
-            btn.disabled = true;
-            btn.innerText = "⚠️ Ganti ke Chrome";
-            btn.onclick = () => alert("Gunakan Google Chrome atau Edge untuk fitur rekam suara.");
         }
 
         function toggleRecord() {
-            if(!isRec) { 
-                try {
-                    rec.start(); 
-                    isRec = true; 
-                    document.getElementById('btnRec').innerText = "⏹️ Berhenti"; 
-                    document.getElementById('btnRec').style.background = "#475569";
-                } catch(e) {
-                    alert("Gagal memulai rekam. Pastikan mikrofon aktif.");
-                }
-            } else { 
-                rec.stop(); 
-                isRec = false; 
-                document.getElementById('btnRec').innerText = "🔴 Mulai Rekam"; 
-                document.getElementById('btnRec').style.background = "#EF4444";
+            if(!isRec) { try{rec.start(); isRec=true; document.getElementById('btnRec').innerText="⏹️ Berhenti";}catch(e){} }
+            else { rec.stop(); isRec=false; document.getElementById('btnRec').innerText="🔴 Mulai Rekam";}
+        }
+
+        // --- FITUR SIMPAN KE WEB (LOCAL STORAGE) ---
+        function saveToWeb() {
+            const text = document.getElementById('note').value;
+            if(!text.trim()) return alert("Teks masih kosong!");
+
+            const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + " | " + now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
+            notes.unshift({ id: Date.now(), content: text, date: timeStr });
+            localStorage.setItem('myNotes', JSON.stringify(notes));
+            
+            document.getElementById('note').value = "";
+            renderNotes();
+            alert("Berhasil disimpan ke Web!");
+        }
+
+        function renderNotes() {
+            const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            const list = document.getElementById('storageList');
+            list.innerHTML = notes.length === 0 ? "<p style='font-size: 12px; color: gray;'>Belum ada catatan.</p>" : "";
+
+            notes.forEach(n => {
+                const item = document.createElement('div');
+                item.className = 'note-card';
+                item.innerHTML = `
+                    <div class="note-info" onclick="loadNote(${n.id})">
+                        <span class="note-preview">${n.content.substring(0, 30)}...</span>
+                        <span class="note-date">${n.date}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-small btn-del" onclick="deleteNote(${n.id})">Hapus</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function loadNote(id) {
+            const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            const note = notes.find(n => n.id === id);
+            if(note) {
+                document.getElementById('note').value = note.content;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        function copyTxt() {
-            const t = document.getElementById('note');
-            if(!t.value) return alert("Tidak ada teks untuk disalin!");
-            t.select(); 
-            navigator.clipboard.writeText(t.value);
-            alert("Teks berhasil disalin ke clipboard!");
+        function deleteNote(id) {
+            let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('myNotes', JSON.stringify(notes));
+            renderNotes();
+        }
+
+        function clearAll() {
+            if(confirm("Hapus semua catatan?")) {
+                localStorage.removeItem('myNotes');
+                renderNotes();
+            }
+        }
+
+        function downloadTxt() {
+            const t = document.getElementById('note').value;
+            if(!t) return alert("Kosong!");
+            const blob = new Blob([t], {type:"text/plain"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "Catatan_Rafi.txt";
+            a.click();
         }
 
         function proses(tipe) {
-            const t = document.getElementById('note').value; 
-            if(!t.trim()) return alert("Teks masih kosong!");
-            
-            const res = document.getElementById('result'); 
+            const t = document.getElementById('note').value;
+            if(!t) return;
+            const res = document.getElementById('result');
             res.style.display = 'block';
-            
-            // Logika pemrosesan sederhana berdasarkan titik
-            const kalimat = t.split('.').filter(s => s.trim().length > 0);
-            
-            if(tipe === 'ringkas') {
-                res.innerHTML = "<b>Hasil Ringkasan:</b><br>" + (kalimat[0] || t) + ".";
-            } else {
-                res.innerHTML = "<b>Poin Penting:</b><br>• " + kalimat.join('<br>• ');
-            }
-            
-            // Scroll otomatis ke hasil
-            res.scrollIntoView({ behavior: 'smooth' });
+            const s = t.split('.');
+            res.innerHTML = tipe === 'ringkas' ? "<b>Ringkasan:</b><br>" + (s[0] || t) : "<b>Poin:</b><br>• " + s.join('<br>• ');
         }
+
+        // Jalankan daftar catatan saat web dibuka
+        renderNotes();
     </script>
 </body>
 </html>
