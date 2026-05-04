@@ -58,45 +58,83 @@
         </div>
     </div>
 
-    <script>
-        let rec; let isRec = false;
+   <script>
+        let rec; 
+        let isRec = false;
+        let forcedStop = false; // Menandai apakah user yang klik berhenti atau sistem
+
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
 
         if(Speech) {
-            rec = new Speech(); rec.continuous = true; rec.lang = 'id-ID'; rec.interimResults = true;
+            rec = new Speech(); 
+            rec.continuous = true; 
+            rec.lang = 'id-ID'; 
+            rec.interimResults = true;
+
             rec.onresult = (e) => {
-                let txt = ''; for(let i=e.resultIndex; i<e.results.length; i++) { if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; }
+                let txt = ''; 
+                for(let i=e.resultIndex; i<e.results.length; i++) { 
+                    if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; 
+                }
                 document.getElementById('note').value += txt;
             };
+
+            // INI KUNCI AGAR ON 10 JAM
+            rec.onend = () => {
+                // Jika isRec masih true tapi sistem mematikan (bukan user klik stop)
+                if (isRec && !forcedStop) {
+                    console.log("Sistem mencoba berhenti, menghidupkan ulang...");
+                    rec.start(); 
+                }
+            };
+
+            rec.onerror = (e) => {
+                if(e.error === 'network') alert("Koneksi internet terputus!");
+                if(e.error === 'not-allowed') alert("Izin Mic ditolak!");
+            };
+
+        } else {
+            const btn = document.getElementById('btnRec');
+            btn.disabled = true;
+            btn.innerText = "⚠️ Gunakan Chrome";
         }
 
         function toggleRecord() {
-            if(!isRec) { try{rec.start(); isRec=true; document.getElementById('btnRec').innerText="⏹️ Berhenti";}catch(e){} }
-            else { rec.stop(); isRec=false; document.getElementById('btnRec').innerText="🔴 Mulai Rekam";}
+            if(!isRec) { 
+                try {
+                    forcedStop = false;
+                    rec.start(); 
+                    isRec = true; 
+                    document.getElementById('btnRec').innerText = "⏹️ Berhenti"; 
+                    document.getElementById('btnRec').style.background = "#475569";
+                } catch(e) { console.error(e); }
+            } else { 
+                forcedStop = true; // User benar-benar ingin berhenti
+                rec.stop(); 
+                isRec = false; 
+                document.getElementById('btnRec').innerText = "🔴 Mulai Rekam"; 
+                document.getElementById('btnRec').style.background = "#EF4444";
+            }
         }
 
-        // --- FITUR SIMPAN KE WEB (LOCAL STORAGE) ---
+        // --- Fitur Lainnya (Simpan, Download, dll tetap sama) ---
         function saveToWeb() {
             const text = document.getElementById('note').value;
             if(!text.trim()) return alert("Teks masih kosong!");
-
             const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
             const now = new Date();
             const timeStr = now.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + " | " + now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-
             notes.unshift({ id: Date.now(), content: text, date: timeStr });
             localStorage.setItem('myNotes', JSON.stringify(notes));
-            
             document.getElementById('note').value = "";
             renderNotes();
-            alert("Berhasil disimpan ke Web!");
+            alert("Berhasil disimpan!");
         }
 
         function renderNotes() {
             const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
             const list = document.getElementById('storageList');
             list.innerHTML = notes.length === 0 ? "<p style='font-size: 12px; color: gray;'>Belum ada catatan.</p>" : "";
-
             notes.forEach(n => {
                 const item = document.createElement('div');
                 item.className = 'note-card';
@@ -116,10 +154,7 @@
         function loadNote(id) {
             const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
             const note = notes.find(n => n.id === id);
-            if(note) {
-                document.getElementById('note').value = note.content;
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+            if(note) { document.getElementById('note').value = note.content; window.scrollTo({top:0, behavior:'smooth'}); }
         }
 
         function deleteNote(id) {
@@ -130,10 +165,7 @@
         }
 
         function clearAll() {
-            if(confirm("Hapus semua catatan?")) {
-                localStorage.removeItem('myNotes');
-                renderNotes();
-            }
+            if(confirm("Hapus semua?")) { localStorage.removeItem('myNotes'); renderNotes(); }
         }
 
         function downloadTxt() {
@@ -152,10 +184,9 @@
             const res = document.getElementById('result');
             res.style.display = 'block';
             const s = t.split('.');
-            res.innerHTML = tipe === 'ringkas' ? "<b>Ringkasan:</b><br>" + (s[0] || t) : "<b>Poin:</b><br>• " + s.join('<br>• ');
+            res.innerHTML = tipe === 'ringkas' ? "<b>Ringkasan:</b><br>" + (s[0] || t) + "." : "<b>Poin:</b><br>• " + s.join('<br>• ');
         }
 
-        // Jalankan daftar catatan saat web dibuka
         renderNotes();
     </script>
 </body>
