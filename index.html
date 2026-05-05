@@ -3,211 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Voice Note Pro - Global V2.1</title>
+    <title>Smart Voice Note Ultra - V3.0</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlNtYXJ0IFZvaWNlIE5vdGUiLAogICJzaG9ydF9uYW1lIjogIlZvaWNlTm90ZSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjNGY0NmU1IiwKICAidGhlbWVfY29sb3IiOiAiIzRmNDZlNSIsCiAgImljb25zIjogW3sgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi83MDkvNzA5OTU3LnBuZyIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2UvcG5nIiB9XQp9">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4F46E5; --bg: #F1F5F9; --card: #FFFFFF; --border: #E2E8F0; }
+        :root { --primary: #4F46E5; --bg: #F1F5F9; --card: #FFFFFF; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
-        .container { max-width: 900px; width: 100%; background: var(--card); padding: 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); }
-        .header { text-align: center; margin-bottom: 20px; }
-        .lang-switcher { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .lang-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; }
-        .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        textarea { width: 100%; height: 200px; padding: 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 16px; margin-bottom: 10px; resize: none; background: #F8FAFC; box-sizing: border-box; }
-        .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
-        .btn { padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; color: white; transition: 0.3s; font-size: 14px; flex: 1; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-rec { background: #EF4444; }
-        .btn-rec.recording { background: #475569; animation: pulse 1.5s infinite; }
-        .btn-save { background: #2563EB; }
-        .timer { text-align: center; font-weight: bold; color: #EF4444; margin-bottom: 10px; font-family: monospace; font-size: 18px; display: none; }
-        .tips-box { background: #FFFBEB; border: 1px solid #FEF3C7; padding: 15px; border-radius: 12px; font-size: 12px; color: #92400E; margin-bottom: 20px; line-height: 1.5; }
-        .note-card { background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid var(--border); padding-top: 15px; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .container { max-width: 900px; width: 100%; background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .header { text-align: center; margin-bottom: 15px; }
+        .timer { text-align: center; color: #EF4444; font-weight: bold; font-size: 20px; display: none; margin: 10px 0; }
+        textarea { width: 100%; height: 200px; padding: 15px; border-radius: 12px; border: 1px solid #E2E8F0; font-size: 16px; margin-bottom: 10px; resize: none; background: #F8FAFC; box-sizing: border-box; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .btn { padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; color: white; flex: 1; min-width: 120px; font-size: 13px; }
+        .search-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #E2E8F0; margin-bottom: 15px; }
+        .note-card { background: white; padding: 15px; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .footer { margin-top: 20px; text-align: center; font-size: 11px; color: #64748B; border-top: 1px solid #E2E8F0; padding-top: 10px; }
+        .active { background: var(--primary) !important; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 id="ui-title">🎙️ Smart Voice Note Pro</h1>
-            <p id="ui-subtitle">AI-Powered Notetaker for Professionals</p>
+            <h1>🎙️ Smart Voice Note Ultra</h1>
+            <p style="font-size: 12px; color: gray;">V3.0 | AI Command & Diarization Enabled</p>
         </div>
 
-        <div class="lang-switcher">
-            <button class="lang-btn active" id="btn-id" onclick="changeLang('id-ID')">🇮🇩 Indonesia</button>
-            <button class="lang-btn" id="btn-en" onclick="changeLang('en-US')">🇺🇸 us English</button>
-        </div>
-        
-        <div class="timer" id="timerDisplay">00:00</div>
+        <div id="timerDisplay" class="timer">00:00</div>
 
         <div class="btn-group">
-            <button class="btn btn-rec" onclick="toggleRecord()" id="btnRec">🔴 Mulai Rekam</button>
-            <button class="btn btn-save" onclick="saveToWeb()" id="btnSave">💾 Simpan ke Web</button>
+            <button class="btn" style="background: #EF4444;" id="btnRec" onclick="toggleRecord()">🔴 Mulai Rekam</button>
+            <button class="btn" style="background: #2563EB;" onclick="saveToWeb()">💾 Simpan ke Web</button>
         </div>
 
-        <textarea id="note" placeholder="Bicara atau ketik di sini..."></textarea>
+        <textarea id="note" placeholder="Bicara... (Coba bilang 'Simpan Catatan' untuk auto-save)"></textarea>
 
-        <div class="btn-group">
-            <button class="btn" style="background:#06B6D4" onclick="proses('ringkas')" id="btnSum">✨ Ringkas</button>
-            <button class="btn" style="background:#06B6D4" onclick="proses('poin')" id="btnPoint">📌 Poin Penting</button>
-            <button class="btn" style="background:#111827" onclick="downloadTxt()" id="btnDown">📥 Download TXT</button>
-        </div>
+        <input type="text" class="search-box" id="search" placeholder="🔍 Cari catatan lama..." onkeyup="renderNotes()">
 
-        <div id="tipsBox" class="tips-box">
-            <strong>🌍 Global Pro Tips:</strong><br>
-            • Gunakan Chrome agar fitur suara maksimal.<br>
-            • Untuk rapat 10 jam: Klik "Simpan" berkala agar data aman.<br>
-            • Rekam TikTok/Zoom: Dekatkan mic ke speaker & Volume 80%.
-        </div>
-
-        <div class="storage-section">
-            <h3 id="ui-history">📂 Riwayat Catatan</h3>
-            <div id="storageList"></div>
-            <button class="btn" style="background:#991B1B; width:100%; margin-top:10px; font-size:11px;" onclick="clearAll()" id="btnClear">🗑️ Hapus Semua Riwayat</button>
-        </div>
+        <div id="storageList"></div>
 
         <div class="footer">
-            Built by <b>Rafi Bagas</b> • <a href="https://wa.me/6288297172672" target="_blank" id="ui-bug">Lapor Bug: +6288297172672</a>
+            Built by <b>Rafi Bagas</b> • <a href="https://wa.me/6288297172672">Bug: +6288297172672</a>
         </div>
     </div>
 
     <script>
         let rec; let isRec = false; let forcedStop = false;
-        let currentLang = 'id-ID';
-        let startTime, timerInterval;
-
-        const translations = {
-            'id-ID': {
-                recStart: "🔴 Mulai Rekam", recStop: "⏹️ Berhenti", save: "💾 Simpan ke Web",
-                placeholder: "Bicara atau ketik di sini...", history: "📂 Riwayat Catatan", clear: "🗑️ Hapus Semua Riwayat",
-                tips: "<strong>🌍 Global Pro Tips:</strong><br>• Gunakan Chrome agar fitur suara maksimal.<br>• Untuk rapat 10 jam: Klik 'Simpan' berkala agar data aman.<br>• Rekam TikTok: Dekatkan mic ke speaker & Volume 80%."
-            },
-            'en-US': {
-                recStart: "🔴 Start Recording", recStop: "⏹️ Stop Recording", save: "💾 Save to Web",
-                placeholder: "Start speaking or type your notes here...", history: "📂 Saved Notes Library", clear: "🗑️ Clear All History",
-                tips: "<strong>🌍 Global Pro Tips:</strong><br>• Chrome/Edge is required for Voice-to-Text AI.<br>• For 10h meetings: Click 'Save to Web' every hour.<br>• Record TikTok/YouTube: Close range to speaker + Volume 80%."
-            }
-        };
+        let lastSpeakerTime = Date.now();
+        let speakerTag = "Speaker A";
 
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
         if(Speech) {
-            rec = new Speech(); 
-            rec.continuous = true; 
-            rec.interimResults = true;
-            rec.maxAlternatives = 1;
-
+            rec = new Speech(); rec.continuous = true; rec.interimResults = true;
+            
             rec.onresult = (e) => {
-                let txt = ''; 
-                for(let i=e.resultIndex; i<e.results.length; i++) { 
+                let finalTxt = '';
+                for(let i = e.resultIndex; i < e.results.length; i++) {
                     if(e.results[i].isFinal) {
-                        let processed = formatText(e.results[i][0].transcript);
-                        txt += processed + ' '; 
+                        let text = e.results[i][0].transcript.toLowerCase();
+                        
+                        // --- AI VOICE COMMAND ---
+                        if(text.includes("simpan catatan")) return saveToWeb();
+                        if(text.includes("hapus semua")) return clearAll();
+                        
+                        // --- DIARIZATION HACK ---
+                        let now = Date.now();
+                        if(now - lastSpeakerTime > 3000) { // Jika jeda > 3 detik, ganti speaker
+                            speakerTag = (speakerTag === "Speaker A") ? "Speaker B" : "Speaker A";
+                            finalTxt += `\n[${speakerTag}]: `;
+                        }
+                        lastSpeakerTime = now;
+                        finalTxt += e.results[i][0].transcript;
                     }
                 }
-                document.getElementById('note').value += txt;
+                document.getElementById('note').value += finalTxt;
             };
-            rec.onend = () => { if (isRec && !forcedStop) rec.start(); };
-        }
-
-        function formatText(text) {
-            let res = text;
-            res = res.replace(/(\d+)\s*ribu/gi, (m, n) => n + ".000");
-            res = res.replace(/(\d+)\s*rupiah/gi, (m, n) => "Rp " + parseInt(n).toLocaleString('id-ID'));
-            return res;
-        }
-
-        function changeLang(lang) {
-            currentLang = lang;
-            rec.lang = lang;
-            const t = translations[lang];
-            document.getElementById('btnRec').innerText = isRec ? t.recStop : t.recStart;
-            document.getElementById('btnSave').innerText = t.save;
-            document.getElementById('note').placeholder = t.placeholder;
-            document.getElementById('ui-history').innerText = t.history;
-            document.getElementById('btnClear').innerText = t.clear;
-            document.getElementById('tipsBox').innerHTML = t.tips;
-            
-            document.getElementById('btn-id').classList.toggle('active', lang === 'id-ID');
-            document.getElementById('btn-en').classList.toggle('active', lang === 'en-US');
-            renderNotes(); // Refresh riwayat agar label bahasa update
+            rec.onend = () => { if(isRec && !forcedStop) rec.start(); };
         }
 
         function toggleRecord() {
             const b = document.getElementById('btnRec');
-            const tDisp = document.getElementById('timerDisplay');
+            const t = document.getElementById('timerDisplay');
             if(!isRec) {
-                forcedStop = false; rec.start(); isRec = true;
-                b.innerText = translations[currentLang].recStop; b.classList.add('recording');
-                tDisp.style.display = 'block';
-                startTime = Date.now();
-                timerInterval = setInterval(() => {
-                    const diff = Date.now() - startTime;
-                    const m = Math.floor(diff / 60000).toString().padStart(2, '0');
-                    const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                    tDisp.innerText = `${m}:${s}`;
-                }, 1000);
+                isRec = true; forcedStop = false; rec.start();
+                b.innerText = "⏹️ Stop"; t.style.display = 'block';
             } else {
-                forcedStop = true; rec.stop(); isRec = false;
-                b.innerText = translations[currentLang].recStart; b.classList.remove('recording');
-                clearInterval(timerInterval);
+                isRec = false; forcedStop = true; rec.stop();
+                b.innerText = "🔴 Mulai Rekam"; t.style.display = 'none';
             }
         }
 
         function saveToWeb() {
-            const t = document.getElementById('note').value; if(!t.trim()) return;
-            const dur = document.getElementById('timerDisplay').innerText;
-            const notes = JSON.parse(localStorage.getItem('v2Notes') || '[]');
-            const now = new Date();
-            const timeLabel = currentLang === 'id-ID' ? 'Selesai' : 'Finished';
-            const durLabel = currentLang === 'id-ID' ? 'Durasi' : 'Duration';
-            
-            notes.unshift({ 
-                id: Date.now(), 
-                content: t, 
-                date: now.toLocaleDateString(currentLang), 
-                end: now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}),
-                duration: dur,
-                labelSelesai: timeLabel,
-                labelDurasi: durLabel
-            });
-            localStorage.setItem('v2Notes', JSON.stringify(notes));
+            const content = document.getElementById('note').value;
+            if(!content.trim()) return;
+            const notes = JSON.parse(localStorage.getItem('v3Notes') || '[]');
+            notes.unshift({ id: Date.now(), text: content, date: new Date().toLocaleString() });
+            localStorage.setItem('v3Notes', JSON.stringify(notes));
             document.getElementById('note').value = "";
-            document.getElementById('timerDisplay').innerText = "00:00";
-            document.getElementById('timerDisplay').style.display = 'none';
             renderNotes();
+            alert("✅ Disimpan otomatis lewat Voice Command!");
         }
 
         function renderNotes() {
-            const notes = JSON.parse(localStorage.getItem('v2Notes') || '[]');
-            const list = document.getElementById('storageList'); list.innerHTML = "";
-            notes.forEach(n => {
+            const query = document.getElementById('search').value.toLowerCase();
+            const notes = JSON.parse(localStorage.getItem('v3Notes') || '[]');
+            const list = document.getElementById('storageList');
+            list.innerHTML = "";
+            
+            notes.filter(n => n.text.toLowerCase().includes(query)).forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'note-card';
-                div.innerHTML = `<div><b>${n.content.substring(0,30)}...</b><br>
-                                 <small>${n.date} | ${n.labelSelesai}: ${n.end} | ${n.labelDurasi}: ${n.duration}</small></div>
-                                 <button onclick="deleteNote(${n.id})" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">Hapus</button>`;
+                div.innerHTML = `<div><b>${n.text.substring(0,40)}...</b><br><small>${n.date}</small></div>
+                                 <button onclick="deleteNote(${n.id})" style="color:red; background:none; border:none; cursor:pointer;">Hapus</button>`;
                 list.appendChild(div);
             });
         }
 
         function deleteNote(id) {
-            let notes = JSON.parse(localStorage.getItem('v2Notes')).filter(x => x.id !== id);
-            localStorage.setItem('v2Notes', JSON.stringify(notes)); renderNotes();
+            let notes = JSON.parse(localStorage.getItem('v3Notes')).filter(x => x.id !== id);
+            localStorage.setItem('v3Notes', JSON.stringify(notes));
+            renderNotes();
         }
 
-        function clearAll() { if(confirm("Hapus semua?")) { localStorage.removeItem('v2Notes'); renderNotes(); } }
+        function clearAll() { if(confirm("Hapus semua?")) { localStorage.removeItem('v3Notes'); renderNotes(); } }
 
-        function downloadTxt() {
-            const t = document.getElementById('note').value; if(!t) return;
-            const blob = new Blob([t], {type:"text/plain"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Notes.txt"; a.click();
-        }
-
-        function proses(tipe) {
-            const t = document.getElementById('note').value; if(!t) return;
-            const res = document.getElementById('result'); res.style.display = 'block';
-            const s = t.split('.');
-            res.innerHTML = tipe === 'ringkas' ? "<b>Ringkasan:</b><br>" + (s[0] || t) + "." : "<b>Poin:</b><br>• " + s.join('<br>• ');
+        // --- PWA SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi.mFkZEV2ZW50TGlzdGVuZXIoJ2ZldGNoJywgZXZlbnQgPT4ge30pOw==');
         }
 
         renderNotes();
