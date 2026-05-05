@@ -3,188 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Voice Note AI - Full Features</title>
+    <title>Smart Voice Note AI - Global Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4F46E5; --bg: #F8FAFC; --card: #FFFFFF; --border: #E2E8F0; } 
-        body { font-family: 'Inter', sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
-        .container { max-width: 850px; width: 100%; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid var(--border); }
-        h2 { text-align: center; color: #1E293B; margin-bottom: 20px; }
-        textarea { width: 100%; height: 180px; padding: 15px; border-radius: 12px; border: 1px solid var(--border); font-size: 16px; margin-bottom: 10px; resize: none; background: #F8FAFC; box-sizing: border-box; }
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; font-size: 13px; flex: 1; min-width: 120px; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-record { background: #EF4444; }
-        .btn-save { background: #2563EB; }
-        .btn-ai { background: #0EA5E9; }
-        .btn-download { background: #475569; }
-        .btn-delete-all { background: #991B1B; margin-top: 10px; width: 100%; }
+        :root { --primary: #4F46E5; --bg: #F1F5F9; --card: #FFFFFF; --border: #E2E8F0; --text: #1E293B; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); padding: 15px; color: var(--text); display: flex; justify-content: center; }
+        .container { max-width: 900px; width: 100%; background: var(--card); padding: 30px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { font-size: 28px; margin-bottom: 5px; color: #111827; }
         
-        .storage-section { margin-top: 30px; border-top: 2px dashed var(--border); pt: 20px; }
-        .note-card { background: white; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
-        .note-card:hover { background: #F1F5F9; }
-        .note-info { flex-grow: 1; }
-        .note-date { font-size: 11px; color: #64748B; display: block; }
-        .note-preview { font-size: 14px; font-weight: 600; color: #1E293B; }
-        .actions { display: flex; gap: 5px; }
-        .btn-small { padding: 5px 10px; border-radius: 5px; font-size: 11px; border: none; color: white; cursor: pointer; }
-        .btn-del { background: #DC2626; }
+        /* Language Switcher */
+        .lang-picker { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .lang-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        textarea { width: 100%; height: 220px; padding: 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 16px; margin-bottom: 15px; resize: none; background: #F8FAFC; box-sizing: border-box; transition: 0.3s; }
+        textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
         
-        @media print { .btn-group, textarea, .storage-section, h2 { display: none !important; } }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        .btn { padding: 14px 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; color: white; transition: 0.3s; font-size: 14px; flex: 1; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .btn-rec { background: #EF4444; box-shadow: 0 4px 0 #B91C1C; }
+        .btn-rec.recording { background: #475569; box-shadow: 0 4px 0 #1E293B; animation: pulse 1.5s infinite; }
+        .btn-save { background: #2563EB; box-shadow: 0 4px 0 #1D4ED8; }
+        .btn-ai { background: #06B6D4; box-shadow: 0 4px 0 #0891B2; }
+        .btn-down { background: #111827; box-shadow: 0 4px 0 #000000; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        
+        .result-box { background: #F0F9FF; padding: 20px; border-radius: 16px; border: 1px solid #BAE6FD; color: #0369A1; display: none; margin-bottom: 20px; }
+
+        /* Storage Section */
+        .storage-section { margin-top: 40px; border-top: 2px solid var(--border); pt: 25px; }
+        .note-card { background: white; padding: 15px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .note-card:hover { border-color: var(--primary); background: #F5F3FF; }
+        .note-date { font-size: 11px; color: #94a3b8; }
+        
+        /* Global Tips */
+        .tips-box { background: #FFFBEB; border: 1px solid #FEF3C7; padding: 15px; border-radius: 12px; font-size: 12px; color: #92400E; margin-top: 20px; }
+        
+        footer { margin-top: 40px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid var(--border); padding-top: 20px; }
+        a { color: var(--primary); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🎙️ Smart Voice Note Pro</h2>
+        <div class="header">
+            <h1>🎙️ Smart Voice Note Pro</h1>
+            <p id="subTitle">AI-Powered Notetaker for Global Professionals</p>
+        </div>
+
+        <div class="lang-picker">
+            <button class="lang-btn active" onclick="setLang('id-ID', this)">🇮🇩 Indonesia</button>
+            <button class="lang-btn" onclick="setLang('en-US', this)">🇺🇸 English</button>
+        </div>
         
         <div class="btn-group">
-            <button class="btn btn-record" onclick="toggleRecord()" id="btnRec">🔴 Mulai Rekam</button>
-            <button class="btn btn-save" onclick="saveToWeb()">💾 Simpan ke Web</button>
+            <button class="btn btn-rec" onclick="toggleRecord()" id="btnRec">🔴 Start Recording</button>
+            <button class="btn btn-save" onclick="saveToWeb()">💾 Save to Web</button>
         </div>
 
-        <textarea id="note" placeholder="Bicara atau ketik di sini..."></textarea>
+        <textarea id="note" placeholder="Start speaking or type your notes here..."></textarea>
 
         <div class="btn-group">
-            <button class="btn btn-ai" onclick="proses('ringkas')">✨ Ringkas</button>
-            <button class="btn btn-ai" onclick="proses('poin')">📌 Poin Penting</button>
-            <button class="btn btn-download" onclick="downloadTxt()">📥 Download TXT</button>
+            <button class="btn btn-ai" onclick="proses('ringkas')">✨ Auto Summarize</button>
+            <button class="btn btn-ai" onclick="proses('poin')">📌 Key Points</button>
+            <button class="btn btn-down" onclick="downloadTxt()">📥 Download TXT</button>
         </div>
 
-        <div id="result" style="background: #F0F9FF; padding: 15px; border-radius: 10px; display: none; margin-bottom: 15px; border: 1px solid #BAE6FD;"></div>
+        <div id="result" class="result-box"></div>
+
+        <div class="tips-box">
+            <strong>🌍 Global Pro Tips:</strong><br>
+            • <b>Chrome/Edge</b> is required for Voice-to-Text AI.<br>
+            • For rapat/meeting 10 hours: Click <b>"Save to Web"</b> every hour to keep data safe.<br>
+            • To record TikTok/YouTube: Close range to speaker + Volume 80%.
+        </div>
 
         <div class="storage-section">
-            <h3 style="font-size: 16px;">📂 Catatan Tersimpan</h3>
+            <h3 style="font-size: 18px;">📂 Saved Notes Library</h3>
             <div id="storageList"></div>
-            <button class="btn btn-delete-all" onclick="clearAll()">🗑️ Hapus Semua Riwayat</button>
+            <button class="btn" style="background:#991B1B; width:100%; margin-top:15px; font-size:11px;" onclick="clearAll()">🗑️ Clear All History</button>
         </div>
+
+        <footer>
+            Built by <b>Rafi Bagas</b> • Found a bug? 
+            <a href="https://wa.me/628XXXXXXXX" target="_blank">Contact Developer</a>
+        </footer>
     </div>
 
-   <script>
-        let rec; 
-        let isRec = false;
-        let forcedStop = false; // Menandai apakah user yang klik berhenti atau sistem
-
+    <script>
+        let rec; let isRec = false; let forcedStop = false;
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
 
         if(Speech) {
-            rec = new Speech(); 
-            rec.continuous = true; 
-            rec.lang = 'id-ID'; 
-            rec.interimResults = true;
+            rec = new Speech(); rec.continuous = true; rec.interimResults = true;
+            rec.lang = 'id-ID';
 
             rec.onresult = (e) => {
-                let txt = ''; 
-                for(let i=e.resultIndex; i<e.results.length; i++) { 
-                    if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; 
-                }
+                let txt = ''; for(let i=e.resultIndex; i<e.results.length; i++) { if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; }
                 document.getElementById('note').value += txt;
             };
 
-            // INI KUNCI AGAR ON 10 JAM
-            rec.onend = () => {
-                // Jika isRec masih true tapi sistem mematikan (bukan user klik stop)
-                if (isRec && !forcedStop) {
-                    console.log("Sistem mencoba berhenti, menghidupkan ulang...");
-                    rec.start(); 
-                }
-            };
-
-            rec.onerror = (e) => {
-                if(e.error === 'network') alert("Koneksi internet terputus!");
-                if(e.error === 'not-allowed') alert("Izin Mic ditolak!");
-            };
-
+            // AUTO-RESTART SYSTEM (FOR 10 HOURS SESSION)
+            rec.onend = () => { if (isRec && !forcedStop) { rec.start(); } };
         } else {
-            const btn = document.getElementById('btnRec');
-            btn.disabled = true;
-            btn.innerText = "⚠️ Gunakan Chrome";
+            const b = document.getElementById('btnRec'); b.disabled = true; b.innerText = "❌ Browser Not Supported";
+        }
+
+        function setLang(l, btn) {
+            if(isRec) return alert("Stop recording first!");
+            rec.lang = l;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
 
         function toggleRecord() {
-            if(!isRec) { 
-                try {
-                    forcedStop = false;
-                    rec.start(); 
-                    isRec = true; 
-                    document.getElementById('btnRec').innerText = "⏹️ Berhenti"; 
-                    document.getElementById('btnRec').style.background = "#475569";
-                } catch(e) { console.error(e); }
-            } else { 
-                forcedStop = true; // User benar-benar ingin berhenti
-                rec.stop(); 
-                isRec = false; 
-                document.getElementById('btnRec').innerText = "🔴 Mulai Rekam"; 
-                document.getElementById('btnRec').style.background = "#EF4444";
+            const b = document.getElementById('btnRec');
+            if(!isRec) {
+                forcedStop = false; rec.start(); isRec = true;
+                b.innerText = "⏹️ Stop Recording"; b.classList.add('recording');
+            } else {
+                forcedStop = true; rec.stop(); isRec = false;
+                b.innerText = "🔴 Start Recording"; b.classList.remove('recording');
             }
         }
 
-        // --- Fitur Lainnya (Simpan, Download, dll tetap sama) ---
         function saveToWeb() {
-            const text = document.getElementById('note').value;
-            if(!text.trim()) return alert("Teks masih kosong!");
-            const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            const t = document.getElementById('note').value; if(!t.trim()) return alert("Empty!");
+            const notes = JSON.parse(localStorage.getItem('globalNotes') || '[]');
             const now = new Date();
-            const timeStr = now.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + " | " + now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            notes.unshift({ id: Date.now(), content: text, date: timeStr });
-            localStorage.setItem('myNotes', JSON.stringify(notes));
-            document.getElementById('note').value = "";
-            renderNotes();
-            alert("Berhasil disimpan!");
+            const time = now.toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+            notes.unshift({ id: Date.now(), content: t, date: time });
+            localStorage.setItem('globalNotes', JSON.stringify(notes));
+            document.getElementById('note').value = ""; renderNotes();
+            alert("Saved to library!");
         }
 
         function renderNotes() {
-            const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
+            const notes = JSON.parse(localStorage.getItem('globalNotes') || '[]');
             const list = document.getElementById('storageList');
-            list.innerHTML = notes.length === 0 ? "<p style='font-size: 12px; color: gray;'>Belum ada catatan.</p>" : "";
+            list.innerHTML = notes.length === 0 ? "<p style='color:gray; font-size:12px;'>No records found.</p>" : "";
             notes.forEach(n => {
-                const item = document.createElement('div');
-                item.className = 'note-card';
-                item.innerHTML = `
-                    <div class="note-info" onclick="loadNote(${n.id})">
-                        <span class="note-preview">${n.content.substring(0, 30)}...</span>
-                        <span class="note-date">${n.date}</span>
-                    </div>
-                    <div class="actions">
-                        <button class="btn-small btn-del" onclick="deleteNote(${n.id})">Hapus</button>
-                    </div>
-                `;
-                list.appendChild(item);
+                const div = document.createElement('div');
+                div.className = 'note-card';
+                div.innerHTML = `<div onclick="loadNote(${n.id})"><b>${n.content.substring(0,35)}...</b><br><span class="note-date">${n.date}</span></div>
+                                 <button onclick="deleteNote(${n.id})" style="background:none; border:none; color:#EF4444; cursor:pointer; font-weight:bold;">Del</button>`;
+                list.appendChild(div);
             });
         }
 
         function loadNote(id) {
-            const notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
-            const note = notes.find(n => n.id === id);
-            if(note) { document.getElementById('note').value = note.content; window.scrollTo({top:0, behavior:'smooth'}); }
+            const n = JSON.parse(localStorage.getItem('globalNotes')).find(x => x.id === id);
+            document.getElementById('note').value = n.content; window.scrollTo({top:0, behavior:'smooth'});
         }
 
         function deleteNote(id) {
-            let notes = JSON.parse(localStorage.getItem('myNotes') || '[]');
-            notes = notes.filter(n => n.id !== id);
-            localStorage.setItem('myNotes', JSON.stringify(notes));
-            renderNotes();
+            let notes = JSON.parse(localStorage.getItem('globalNotes')).filter(x => x.id !== id);
+            localStorage.setItem('globalNotes', JSON.stringify(notes)); renderNotes();
         }
 
-        function clearAll() {
-            if(confirm("Hapus semua?")) { localStorage.removeItem('myNotes'); renderNotes(); }
-        }
+        function clearAll() { if(confirm("Clear all?")) { localStorage.removeItem('globalNotes'); renderNotes(); } }
 
         function downloadTxt() {
-            const t = document.getElementById('note').value;
-            if(!t) return alert("Kosong!");
+            const t = document.getElementById('note').value; if(!t) return;
             const blob = new Blob([t], {type:"text/plain"});
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "Catatan_Rafi.txt";
-            a.click();
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "SmartNotes_Global.txt"; a.click();
         }
 
         function proses(tipe) {
-            const t = document.getElementById('note').value;
-            if(!t) return;
-            const res = document.getElementById('result');
-            res.style.display = 'block';
+            const t = document.getElementById('note').value; if(!t) return;
+            const res = document.getElementById('result'); res.style.display = 'block';
             const s = t.split('.');
-            res.innerHTML = tipe === 'ringkas' ? "<b>Ringkasan:</b><br>" + (s[0] || t) + "." : "<b>Poin:</b><br>• " + s.join('<br>• ');
+            res.innerHTML = tipe === 'ringkas' ? "<b>Summary:</b><br>" + (s[0] || t) + "." : "<b>Key Points:</b><br>• " + s.join('<br>• ');
+            res.scrollIntoView({behavior:'smooth'});
         }
 
         renderNotes();
