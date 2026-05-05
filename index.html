@@ -3,45 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Voice Note AI - Global Pro</title>
+    <title>Smart Voice Note AI - Global Pro V2</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #4F46E5; --bg: #F1F5F9; --card: #FFFFFF; --border: #E2E8F0; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); padding: 15px; display: flex; justify-content: center; }
         .container { max-width: 900px; width: 100%; background: var(--card); padding: 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); }
-        
         .header { text-align: center; margin-bottom: 20px; }
         .lang-switcher { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .lang-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .lang-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: white; cursor: pointer; font-weight: 600; }
         .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-        textarea { width: 100%; height: 200px; padding: 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 16px; margin-bottom: 15px; resize: none; background: #F8FAFC; box-sizing: border-box; }
-        
+        textarea { width: 100%; height: 200px; padding: 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 16px; margin-bottom: 10px; resize: none; background: #F8FAFC; box-sizing: border-box; }
         .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
         .btn { padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: 700; color: white; transition: 0.3s; font-size: 14px; flex: 1; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        
         .btn-rec { background: #EF4444; }
         .btn-rec.recording { background: #475569; animation: pulse 1.5s infinite; }
         .btn-save { background: #2563EB; }
-        .btn-ai { background: #06B6D4; }
-        .btn-down { background: #111827; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        
+        .timer { text-align: center; font-weight: bold; color: #EF4444; margin-bottom: 10px; font-family: monospace; font-size: 18px; display: none; }
         .result-box { background: #F0F9FF; padding: 20px; border-radius: 16px; border: 1px solid #BAE6FD; color: #0369A1; display: none; margin-bottom: 20px; }
-        .tips-box { background: #FFFBEB; border: 1px solid #FEF3C7; padding: 15px; border-radius: 12px; font-size: 12px; color: #92400E; margin-bottom: 20px; line-height: 1.5; }
-        
-        .storage-section { margin-top: 30px; border-top: 2px solid var(--border); padding-top: 20px; }
         .note-card { background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        
-        footer { margin-top: 30px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid var(--border); padding-top: 15px; }
+        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #64748B; border-top: 1px solid var(--border); padding-top: 15px; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1 id="ui-title">🎙️ Smart Voice Note Pro</h1>
-            <p id="ui-subtitle" style="color: #64748B;">AI-Powered Notetaker for Professionals</p>
+            <p id="ui-subtitle">AI-Powered Notetaker for Professionals</p>
         </div>
 
         <div class="lang-switcher">
@@ -49,6 +38,8 @@
             <button class="lang-btn" onclick="changeLang('en-US', this)">🇺🇸 English</button>
         </div>
         
+        <div class="timer" id="timerDisplay">00:00</div>
+
         <div class="btn-group">
             <button class="btn btn-rec" onclick="toggleRecord()" id="btnRec">🔴 Mulai Rekam</button>
             <button class="btn btn-save" onclick="saveToWeb()" id="btnSave">💾 Simpan ke Web</button>
@@ -57,19 +48,12 @@
         <textarea id="note" placeholder="Bicara atau ketik di sini..."></textarea>
 
         <div class="btn-group">
-            <button class="btn btn-ai" onclick="proses('ringkas')" id="btnSum">✨ Ringkas</button>
-            <button class="btn btn-ai" onclick="proses('poin')" id="btnPoint">📌 Poin Penting</button>
-            <button class="btn btn-down" onclick="downloadTxt()" id="btnDown">📥 Download TXT</button>
+            <button class="btn" style="background:#06B6D4" onclick="proses('ringkas')" id="btnSum">✨ Ringkas</button>
+            <button class="btn" style="background:#06B6D4" onclick="proses('poin')" id="btnPoint">📌 Poin Penting</button>
+            <button class="btn" style="background:#111827" onclick="downloadTxt()" id="btnDown">📥 Download TXT</button>
         </div>
 
         <div id="result" class="result-box"></div>
-
-        <div class="tips-box" id="ui-tips">
-            <strong>🌍 Global Pro Tips:</strong><br>
-            • Gunakan Chrome agar fitur suara maksimal.<br>
-            • Untuk rapat 10 jam: Klik "Simpan" berkala agar data aman.<br>
-            • Rekam TikTok: Dekatkan mic ke speaker & Volume 80%.
-        </div>
 
         <div class="storage-section">
             <h3 id="ui-history">📂 Riwayat Catatan</h3>
@@ -77,128 +61,156 @@
             <button class="btn" style="background:#991B1B; width:100%; margin-top:10px; font-size:11px;" onclick="clearAll()" id="btnClear">🗑️ Hapus Semua Riwayat</button>
         </div>
 
-        <footer>
-            Built by <b>Rafi Bagas</b> • <a href="https://wa.me/628XXXXXXXX" target="_blank" id="ui-bug">Found a bug? Contact Me</a>
-        </footer>
+        <div class="footer">
+            Built by <b>Rafi Bagas</b> • <a href="https://wa.me/6288297172672" target="_blank" id="ui-bug">Lapor Bug: +6288297172672</a>
+        </div>
     </div>
 
     <script>
         let rec; let isRec = false; let forcedStop = false;
         let currentLang = 'id-ID';
+        let startTime, timerInterval;
 
         const translations = {
             'id-ID': {
-                title: "🎙️ Smart Voice Note Pro", subtitle: "Asisten AI Pencatat Profesional",
                 recStart: "🔴 Mulai Rekam", recStop: "⏹️ Berhenti", save: "💾 Simpan ke Web",
-                placeholder: "Bicara atau ketik di sini...", sum: "✨ Ringkas", point: "📌 Poin Penting",
-                down: "📥 Download TXT", history: "📂 Riwayat Catatan", clear: "🗑️ Hapus Semua Riwayat",
-                bug: "Ada Bug? Hubungi Saya", tips: "<strong>🌍 Global Pro Tips:</strong><br>• Gunakan Chrome agar fitur suara maksimal.<br>• Untuk rapat 10 jam: Klik 'Simpan' berkala agar data aman.<br>• Rekam TikTok: Dekatkan mic ke speaker & Volume 80%."
+                placeholder: "Bicara atau ketik di sini...", history: "📂 Riwayat Catatan", clear: "🗑️ Hapus Semua Riwayat",
+                bug: "Lapor Bug: +6288297172672"
             },
             'en-US': {
-                title: "🎙️ Smart Voice Note Pro", subtitle: "AI-Powered Notetaker for Professionals",
                 recStart: "🔴 Start Recording", recStop: "⏹️ Stop Recording", save: "💾 Save to Web",
-                placeholder: "Start speaking or type here...", sum: "✨ Summarize", point: "📌 Key Points",
-                down: "📥 Download TXT", history: "📂 Saved Notes Library", clear: "🗑️ Clear All History",
-                bug: "Found a bug? Contact Developer", tips: "<strong>🌍 Global Pro Tips:</strong><br>• Use Chrome for best AI accuracy.<br>• For 10h meetings: Click 'Save' periodically to keep data safe.<br>• TikTok Record: Keep mic close to speaker & Volume 80%."
+                placeholder: "Start speaking...", history: "📂 Saved Library", clear: "🗑️ Clear History",
+                bug: "Report Bug: +6288297172672"
             }
         };
 
+        // --- FORMATTING ENGINE (NSL) ---
+        function formatText(text) {
+            let result = text;
+            const currencyMap = {
+                "rupiah": "Rp", "dollar": "$", "dolar": "$"
+            };
+            const numberMap = {
+                "nol": 0, "satu": 1, "dua": 2, "tiga": 3, "empat": 4, "lima": 5, "enam": 6, "tujuh": 7, "delapan": 8, "sembilan": 9, "sepuluh": 10
+            };
+
+            // Convert word numbers to digits (simple)
+            Object.keys(numberMap).forEach(key => {
+                const reg = new RegExp("\\b" + key + "\\b", "gi");
+                result = result.replace(reg, numberMap[key]);
+            });
+
+            // Currency formatting (e.g., "1000 rupiah" -> "Rp 1.000")
+            result = result.replace(/(\d+)\s*(rupiah|dollar|dolar)/gi, (match, num, curr) => {
+                const symbol = currencyMap[curr.toLowerCase()] || "Rp";
+                return symbol + " " + parseInt(num).toLocaleString('id-ID');
+            });
+
+            // Suffix formatting (e.g., "5 ribu" -> "5.000")
+            result = result.replace(/(\d+)\s*ribu/gi, (m, n) => n + ".000");
+            result = result.replace(/(\d+)\s*juta/gi, (m, n) => n + ".000.000");
+
+            return result;
+        }
+
         const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
         if(Speech) {
-            rec = new Speech(); rec.continuous = true; rec.interimResults = true;
+            rec = new Speech(); 
+            rec.continuous = true; 
+            rec.interimResults = true;
+            // Optimasi Noise: Menurunkan batas deteksi agar suara rendah masuk
+            rec.maxAlternatives = 1;
+
             rec.onresult = (e) => {
-                let txt = ''; for(let i=e.resultIndex; i<e.results.length; i++) { if(e.results[i].isFinal) txt += e.results[i][0].transcript + ' '; }
+                let txt = ''; 
+                for(let i=e.resultIndex; i<e.results.length; i++) { 
+                    if(e.results[i].isFinal) {
+                        let processed = formatText(e.results[i][0].transcript);
+                        txt += processed + ' '; 
+                    }
+                }
                 document.getElementById('note').value += txt;
             };
             rec.onend = () => { if (isRec && !forcedStop) rec.start(); };
         }
 
-        function changeLang(lang, btn) {
-            if(isRec) return alert(currentLang === 'id-ID' ? "Hentikan rekaman dulu!" : "Stop recording first!");
-            currentLang = lang;
-            rec.lang = lang;
-            
-            // Update UI
-            const t = translations[lang];
-            document.getElementById('ui-title').innerText = t.title;
-            document.getElementById('ui-subtitle').innerText = t.subtitle;
-            document.getElementById('btnRec').innerText = t.recStart;
-            document.getElementById('btnSave').innerText = t.save;
-            document.getElementById('note').placeholder = t.placeholder;
-            document.getElementById('btnSum').innerText = t.sum;
-            document.getElementById('btnPoint').innerText = t.point;
-            document.getElementById('btnDown').innerText = t.down;
-            document.getElementById('ui-history').innerText = t.history;
-            document.getElementById('btnClear').innerText = t.clear;
-            document.getElementById('ui-bug').innerText = t.bug;
-            document.getElementById('ui-tips').innerHTML = t.tips;
-
-            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
         function toggleRecord() {
             const b = document.getElementById('btnRec');
+            const tDisp = document.getElementById('timerDisplay');
             if(!isRec) {
                 forcedStop = false; rec.start(); isRec = true;
                 b.innerText = translations[currentLang].recStop; b.classList.add('recording');
+                tDisp.style.display = 'block';
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
             } else {
                 forcedStop = true; rec.stop(); isRec = false;
                 b.innerText = translations[currentLang].recStart; b.classList.remove('recording');
+                clearInterval(timerInterval);
             }
         }
 
+        function updateTimer() {
+            const diff = Date.now() - startTime;
+            const m = Math.floor(diff / 60000).toString().padStart(2, '0');
+            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `${m}:${s}`;
+        }
+
         function saveToWeb() {
-            const t = document.getElementById('note').value; if(!t.trim()) return alert("Empty!");
-            const notes = JSON.parse(localStorage.getItem('globalNotes') || '[]');
+            const t = document.getElementById('note').value; if(!t.trim()) return;
+            const dur = document.getElementById('timerDisplay').innerText;
+            const notes = JSON.parse(localStorage.getItem('v2Notes') || '[]');
             const now = new Date();
-            const time = now.toLocaleString(currentLang === 'id-ID' ? 'id-ID' : 'en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-            notes.unshift({ id: Date.now(), content: t, date: time });
-            localStorage.setItem('globalNotes', JSON.stringify(notes));
-            document.getElementById('note').value = ""; renderNotes();
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            notes.unshift({ id: Date.now(), content: t, date: now.toDateString(), end: time, duration: dur });
+            localStorage.setItem('v2Notes', JSON.stringify(notes));
+            document.getElementById('note').value = "";
+            document.getElementById('timerDisplay').innerText = "00:00";
+            document.getElementById('timerDisplay').style.display = 'none';
+            renderNotes();
         }
 
         function renderNotes() {
-            const notes = JSON.parse(localStorage.getItem('globalNotes') || '[]');
-            const list = document.getElementById('storageList');
-            list.innerHTML = "";
+            const notes = JSON.parse(localStorage.getItem('v2Notes') || '[]');
+            const list = document.getElementById('storageList'); list.innerHTML = "";
             notes.forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'note-card';
-                div.innerHTML = `<div onclick="loadNote(${n.id})" style="cursor:pointer"><b>${n.content.substring(0,35)}...</b><br><small style="color:gray">${n.date}</small></div>
-                                 <button onclick="deleteNote(${n.id})" style="background:none; border:none; color:#EF4444; cursor:pointer; font-weight:bold;">Del</button>`;
+                div.innerHTML = `<div><b>${n.content.substring(0,30)}...</b><br>
+                                 <small>${n.date} | Selesai: ${n.end} | Durasi: ${n.duration}</small></div>
+                                 <button onclick="deleteNote(${n.id})" style="color:red; border:none; background:none; cursor:pointer;">Hapus</button>`;
                 list.appendChild(div);
             });
         }
 
-        function loadNote(id) {
-            const n = JSON.parse(localStorage.getItem('globalNotes')).find(x => x.id === id);
-            document.getElementById('note').value = n.content; window.scrollTo({top:0, behavior:'smooth'});
-        }
-
         function deleteNote(id) {
-            let notes = JSON.parse(localStorage.getItem('globalNotes')).filter(x => x.id !== id);
-            localStorage.setItem('globalNotes', JSON.stringify(notes)); renderNotes();
+            let notes = JSON.parse(localStorage.getItem('v2Notes')).filter(x => x.id !== id);
+            localStorage.setItem('v2Notes', JSON.stringify(notes)); renderNotes();
         }
 
-        function clearAll() { if(confirm("Clear history?")) { localStorage.removeItem('globalNotes'); renderNotes(); } }
+        function changeLang(lang, btn) {
+            currentLang = lang; rec.lang = lang;
+            document.getElementById('btnRec').innerText = translations[lang].recStart;
+            document.getElementById('note').placeholder = translations[lang].placeholder;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
 
+        function clearAll() { if(confirm("Hapus semua?")) { localStorage.removeItem('v2Notes'); renderNotes(); } }
+        
         function downloadTxt() {
             const t = document.getElementById('note').value; if(!t) return;
             const blob = new Blob([t], {type:"text/plain"});
-            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "SmartNotes.txt"; a.click();
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Notes_Rafi.txt"; a.click();
         }
 
         function proses(tipe) {
             const t = document.getElementById('note').value; if(!t) return;
             const res = document.getElementById('result'); res.style.display = 'block';
             const s = t.split('.');
-            if(currentLang === 'id-ID') {
-                res.innerHTML = tipe === 'ringkas' ? "<b>Ringkasan:</b><br>" + (s[0] || t) + "." : "<b>Poin Penting:</b><br>• " + s.join('<br>• ');
-            } else {
-                res.innerHTML = tipe === 'ringkas' ? "<b>Summary:</b><br>" + (s[0] || t) + "." : "<b>Key Points:</b><br>• " + s.join('<br>• ');
-            }
-            res.scrollIntoView({behavior:'smooth'});
+            res.innerHTML = tipe === 'ringkas' ? "<b>Ringkasan:</b><br>" + (s[0] || t) + "." : "<b>Poin:</b><br>• " + s.join('<br>• ');
         }
 
         renderNotes();
